@@ -45,7 +45,7 @@ if [[ $BUILDKITE_PULL_REQUEST == "false" ]]; then
     exit 0
   fi
 
-  JSON=$($BUILDKITE_BUILD_CHECKOUT_PATH/.buildkite/factory-command.sh create-build $PIPELINE)
+  JSON=$($FACTORY_COMMAND create-build $PIPELINE)
   echo "Output from creating build : $JSON"
 
   VESPA_FACTORY_BUILD_ID=$(jq -re '.buildId' <<< "$JSON")
@@ -60,7 +60,7 @@ if [[ $BUILDKITE_PULL_REQUEST == "false" ]]; then
 
   echo "Created factory build $VESPA_FACTORY_BUILD_ID for pipeline $PIPELINE"
 
-  $BUILDKITE_BUILD_CHECKOUT_PATH/.buildkite/factory-command.sh update-build-status $PIPELINE running "Building"
+  $FACTORY_COMMAND update-build-status $PIPELINE running "Building"
   echo "Set factory build $VESPA_FACTORY_BUILD_ID status to running"
 
 else
