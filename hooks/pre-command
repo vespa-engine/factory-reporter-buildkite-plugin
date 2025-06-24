@@ -36,7 +36,7 @@ if [[ $BUILDKITE_PULL_REQUEST == "false" ]]; then
   fi
   buildkite-agent meta-data set factory-command "$FACTORY_COMMAND"
 
-  JOB_JSON=$($BUILDKITE_BUILD_CHECKOUT_PATH/.buildkite/factory-command.sh update-buildkite-job-run $START_SECONDS $PIPELINE "running")
+  JOB_JSON=$($FACTORY_COMMAND update-buildkite-job-run $START_SECONDS $PIPELINE "running")
   echo "Output from updating job run : $JOB_JSON"
 
   # Only create a build if the job type is 'build'
