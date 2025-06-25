@@ -65,7 +65,7 @@ if [[ $BUILDKITE_PULL_REQUEST == "false" ]]; then
   echo "Set factory build $VESPA_FACTORY_BUILD_ID status to running"
 
 else
-  VESPA_VERSION="$(curl -sSLf "https://api.factory.vespa.ai/factory/v1/latest-successful-build?platform=${PLATFORM}&vespaMajor=8" | jq -re .version)"
+  VESPA_VERSION="$(curl -sSLf 'https://api.factory.vespa.ai/factory/v1/latest-successful-build?platform=opensource_centos7&vespaMajor=8' | jq -re .version)"
   export VESPA_VERSION
   buildkite-agent meta-data set vespa-version $VESPA_VERSION
 fi
