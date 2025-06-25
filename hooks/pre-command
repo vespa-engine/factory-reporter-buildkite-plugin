@@ -6,6 +6,7 @@ set -eo pipefail
 PIPELINE="$BUILDKITE_PLUGIN_FACTORY_REPORTER_PIPELINE_ID"
 JOB_TYPE="$BUILDKITE_PLUGIN_FACTORY_REPORTER_JOB_TYPE"
 FIRST_STEP="$BUILDKITE_PLUGIN_FACTORY_REPORTER_FIRST_STEP"
+PLATFORM="$BUILDKITE_PLUGIN_FACTORY_REPORTER_BUILD_PLATFORM"
 
 if [[ $SKIP_BUILDKITE_PLUGINS == "true" ]]; then
     echo "SKIP_BUILDKITE_PLUGINS is set. Skipping factory reporter"
@@ -45,7 +46,7 @@ if [[ $BUILDKITE_PULL_REQUEST == "false" ]]; then
     exit 0
   fi
 
-  JSON=$($FACTORY_COMMAND create-build $PIPELINE)
+  JSON=$($FACTORY_COMMAND create-build $PIPELINE $PLATFORM)
   echo "Output from creating build : $JSON"
 
   VESPA_FACTORY_BUILD_ID=$(jq -re '.buildId' <<< "$JSON")
@@ -64,7 +65,7 @@ if [[ $BUILDKITE_PULL_REQUEST == "false" ]]; then
   echo "Set factory build $VESPA_FACTORY_BUILD_ID status to running"
 
 else
-  VESPA_VERSION="$(curl -sSLf 'https://api.factory.vespa.ai/factory/v1/latest-successful-build?platform=opensource_centos7&vespaMajor=8' | jq -re .version)"
+  VESPA_VERSION="$(curl -sSLf "https://api.factory.vespa.ai/factory/v1/latest-successful-build?platform=${PLATFORM}&vespaMajor=8" | jq -re .version)"
   export VESPA_VERSION
   buildkite-agent meta-data set vespa-version $VESPA_VERSION
 fi

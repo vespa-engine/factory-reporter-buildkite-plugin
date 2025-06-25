@@ -15,6 +15,11 @@ configuration:
         type: string
         description: "The type of job being reported (e.g., 'build', 'release', 'test'). Defaults to 'build'."
         default: 'build'
+    build-platform:
+        type: string
+        description: "The factory build platform. Defaults to 'opensource_centos7'."
+        default: 'opensource_centos7'
+
   additionalProperties: false
   required:
     - pipeline-id
