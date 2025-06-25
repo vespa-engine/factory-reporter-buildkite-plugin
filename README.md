@@ -27,3 +27,7 @@ Set to true if this is the first step in the pipeline
 ### `job-type` (Optional, string)
 
 The type of job. Defaults to `build`.
+
+### `build-platform` (Optional, string)
+
+The factory build platform. Defaults to `opensource_centos7`
