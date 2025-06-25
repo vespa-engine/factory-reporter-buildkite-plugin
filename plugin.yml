@@ -17,7 +17,7 @@ configuration:
         default: 'build'
     build-platform:
         type: string
-        description: "The factory build platform. Defaults to 'opensource_centos7'."
+        description: "The factory build platform, only used for build jobs. Defaults to 'opensource_centos7'."
         default: 'opensource_centos7'
 
   additionalProperties: false
