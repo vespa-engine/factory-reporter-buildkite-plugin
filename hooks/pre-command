@@ -53,14 +53,24 @@ if [[ $BUILDKITE_PULL_REQUEST == "false" ]]; then
   VESPA_FACTORY_BUILD_ID=$(jq -re '.buildId' <<< "$JSON")
   export VESPA_FACTORY_BUILD_ID
 
+  echo "Created factory build $VESPA_FACTORY_BUILD_ID for pipeline $PIPELINE"
+
   VARIABLES=$(jq -r '.variables | to_entries | .[] | "export \(.key)=\(.value|tojson)"' <<< "$JSON")
   eval "$VARIABLES"
+
+  # Export variables for vespa version and git references for use in other scripts
 
   VESPA_VERSION=$(jq -re .version <<< "$JSON")
   export VESPA_VERSION
   buildkite-agent meta-data set vespa-version "$VESPA_VERSION"
 
-  echo "Created factory build $VESPA_FACTORY_BUILD_ID for pipeline $PIPELINE"
+  GITREF_VESPA=$(jq -re '.commits[]|select(.repo=="vespa")|.ref' <<< "$JSON")
+  export GITREF_VESPA
+  buildkite-agent meta-data set gitref-vespa "$GITREF_VESPA"
+
+  GITREF_VESPAAI_CLOUD=$(jq -re '.commits[]|select(.repo=="vespaai-cloud")|.ref' <<< "$JSON")
+  export GITREF_VESPAAI_CLOUD
+  buildkite-agent meta-data set gitref-vespaai-cloud "$GITREF_VESPAAI_CLOUD"
 
   $FACTORY_COMMAND update-build-status "$PIPELINE" running "Building"
   echo "Set factory build $VESPA_FACTORY_BUILD_ID status to running"
