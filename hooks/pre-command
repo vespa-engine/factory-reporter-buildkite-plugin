@@ -21,6 +21,7 @@ fi
 if [[ $BUILDKITE_PULL_REQUEST == "false" ]]; then
   START_SECONDS=$(date +%s)
   export START_SECONDS
+
   if ! buildkite-agent meta-data exists start-seconds; then
     buildkite-agent meta-data set start-seconds "$START_SECONDS"
     echo "Build started at $START_SECONDS"
