@@ -55,7 +55,7 @@ setup_file() {
   assert_output "Build #222 succeeded, factory-reporter skipping pre-exit actions"
 }
 
-@test "For non-build jobs with non-zero exit status, fail factory job run " {
+@test "For non-build jobs with non-zero exit status, fail factory job run" {
   export BUILDKITE_PLUGIN_FACTORY_REPORTER_PIPELINE_ID=123456
   export BUILDKITE_PULL_REQUEST=false
   export BUILDKITE_COMMAND_EXIT_STATUS=1
