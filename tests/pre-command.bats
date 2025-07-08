@@ -25,7 +25,7 @@ create_mock_factory_command() {
 if [ "$1" = "create-build" ]; then
 echo '{
     "buildId":"987",
-    "version":"8.9.0",
+    "version":"8.0.0",
     "commits":[
       {"repo":"vespa","ref":"vespa-ref"},
       {"repo":"vespa-yahoo","ref":"vespa-yahoo-ref"},
@@ -89,14 +89,12 @@ EOF
   run "$PWD/hooks/pre-command"
 
   assert_success
-  refute_output --partial "start-seconds already set, skipping"
+  refute_line "start-seconds already set, skipping"
 
-  assert_output <<EOF
-    buildkite-agent meta-data set start-seconds 1234567890
-    buildkite-agent meta-data set factory-command factory-command
-    Output from updating job run : factory-command update-buildkite-job-run 1234567890 123 running
-    Job type is not 'build', skipping build creation
-EOF
+  assert_line "buildkite-agent meta-data set start-seconds 1234567890"
+  assert_line "buildkite-agent meta-data set factory-command factory-command"
+  assert_line "Output from updating job run : factory-command update-buildkite-job-run 1234567890 123 running"
+  assert_line "Job type is not 'build', skipping build creation"
 
   unstub date
   unstub buildkite-agent
@@ -126,12 +124,10 @@ EOF
   assert_success
 
   # Only check the additional output for build jobs
-  assert_output --partial <<EOF
-    Created factory build 987 for pipeline 123
-    buildkite-agent meta-data set vespa-version 8.9.0
-    buildkite-agent meta-data set gitref-vespa vespa-ref
-    buildkite-agent meta-data set gitref-vespaai-cloud cloud-ref
-    factory-command update-build-status 123 running Building
-    Set factory build 987 status to running
-EOF
+  assert_line "Created factory build 987 for pipeline 123"
+  assert_line "buildkite-agent meta-data set vespa-version 8.0.0"
+  assert_line "buildkite-agent meta-data set gitref-vespa vespa-ref"
+  assert_line "buildkite-agent meta-data set gitref-vespaai-cloud cloud-ref"
+  assert_line "factory-command update-build-status 123 running Building"
+  assert_line "Set factory build 987 status to running"
 }
