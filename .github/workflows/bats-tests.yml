@@ -37,4 +37,4 @@ jobs:
           export BATS_PLUGIN_PATH="$(npm root -g)"
 
           # Run all .bats files in the 'tests' directory
-          bats --pretty -r tests
+          bats -r tests

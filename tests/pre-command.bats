@@ -7,6 +7,14 @@ load "$BATS_PLUGIN_PATH/bats-support/load.bash"
 # Uncomment the following line to debug stub failures
 #export BUILDKITE_AGENT_STUB_DEBUG=/dev/tty
 
+setup_file() {
+  # Echo the name of the test file, to get prettier output from github actions
+  test=$(basename "$BATS_TEST_FILENAME")
+  if [[ "${GITHUB_ACTIONS:-}" == "true" ]]; then
+    echo -e "\033[36m$test\033[0m" >&3
+  fi
+}
+
 setup() {
   # Create mock executable commands in the PATH
   local tmpdir="${BATS_TEST_TMPDIR/bin}"

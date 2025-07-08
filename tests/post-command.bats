@@ -4,6 +4,14 @@ load "$BATS_PLUGIN_PATH/bats-assert/load.bash"
 load "$BATS_PLUGIN_PATH/bats-mock/stub.bash"
 load "$BATS_PLUGIN_PATH/bats-support/load.bash"
 
+setup_file() {
+  # Echo the name of the test file, to get prettier output from github actions
+  test=$(basename "$BATS_TEST_FILENAME")
+  if [[ "${GITHUB_ACTIONS:-}" == "true" ]]; then
+    echo -e "\033[36m$test\033[0m" >&3
+  fi
+}
+
 @test "Skip if SKIP_BUILDKITE_PLUGINS is true" {
   export SKIP_BUILDKITE_PLUGINS=true
   export BUILDKITE_PULL_REQUEST=false
