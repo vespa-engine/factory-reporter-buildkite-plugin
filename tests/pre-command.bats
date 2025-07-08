@@ -45,6 +45,7 @@ EOF
 
 @test "Skip if SKIP_BUILDKITE_PLUGINS is true" {
   export SKIP_BUILDKITE_PLUGINS=true
+  export BUILDKITE_PULL_REQUEST=false
 
   run "$PWD/hooks/pre-command"
 
@@ -54,6 +55,7 @@ EOF
 
 @test "Skip if pipeline is not set" {
   unset PIPELINE
+  export BUILDKITE_PULL_REQUEST=false
 
   run "$PWD/hooks/pre-command"
 

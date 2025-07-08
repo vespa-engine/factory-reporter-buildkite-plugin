@@ -6,6 +6,7 @@ load "$BATS_PLUGIN_PATH/bats-support/load.bash"
 
 @test "Skip if SKIP_BUILDKITE_PLUGINS is true" {
   export SKIP_BUILDKITE_PLUGINS=true
+  export BUILDKITE_PULL_REQUEST=false
 
   run "$PWD/hooks/post-command"
 
@@ -14,6 +15,7 @@ load "$BATS_PLUGIN_PATH/bats-support/load.bash"
 }
 
 @test "Skip if pipeline is not set" {
+  export BUILDKITE_PULL_REQUEST=false
   unset PIPELINE
 
   run "$PWD/hooks/post-command"
