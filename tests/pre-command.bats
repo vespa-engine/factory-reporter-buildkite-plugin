@@ -6,16 +6,25 @@ load "$BATS_PLUGIN_PATH/load.bash"
 #export BUILDKITE_AGENT_STUB_DEBUG=/dev/tty
 
 setup() {
-  # This is a workaround for not being able to stub the 'command' built-in
+  # Create a mock executable commands in the PATH
+  local tmpdir="${BATS_TEST_TMPDIR/bin}"
+  mkdir -p "$tmpdir"
+  create_mock_factory_command "$tmpdir"
+  export PATH="$tmpdir:$PATH"
+}
 
+# This is a workaround for not being able to stub the 'command' built-in
+create_mock_factory_command() {
   # Make sure the local factory-command script doesn't exist
   export BUILDKITE_BUILD_CHECKOUT_PATH="/tmp/nonexistent"
 
-  # Create a mock factory-command in PATH
-  mkdir -p "$BATS_TEST_TMPDIR/bin"
-  touch "$BATS_TEST_TMPDIR/bin/factory-command"
-  chmod +x "$BATS_TEST_TMPDIR/bin/factory-command"
-  export PATH="$BATS_TEST_TMPDIR/bin:$PATH"
+  local bin_dir="${1:-$BATS_TEST_TMPDIR/bin}"
+  mkdir -p "$bin_dir"
+  cat > "$bin_dir/factory-command" << 'EOF'
+#!/bin/sh
+echo "factory-command $@"
+EOF
+  chmod +x "$bin_dir/factory-command"
 }
 
 @test "Skip if SKIP_BUILDKITE_PLUGINS is true" {
@@ -52,8 +61,8 @@ setup() {
   unstub curl
 }
 
-@test "start-seconds and factory-command are set for non-build jobs" {
-  export BUILDKITE_PLUGIN_FACTORY_REPORTER_PIPELINE_ID=123456
+@test "For non-build jobs, set start-seconds and factory-command" {
+  export BUILDKITE_PLUGIN_FACTORY_REPORTER_PIPELINE_ID=123
   export BUILDKITE_PULL_REQUEST=false
 
   stub date "echo 1234567890"
@@ -69,9 +78,13 @@ setup() {
   assert_success
 
   refute_output --partial "start-seconds already set, skipping"
-  assert_output --partial "buildkite-agent meta-data set start-seconds 1234567890"
-  assert_output --partial "buildkite-agent meta-data set factory-command factory-command"
-  assert_output --partial "Job type is not 'build', skipping build creation"
+
+  assert_output <<EOF
+    buildkite-agent meta-data set start-seconds 1234567890
+    buildkite-agent meta-data set factory-command factory-command
+    Output from updating job run : factory-command update-buildkite-job-run 1234567890 123 running
+    Job type is not 'build', skipping build creation
+EOF
 
   unstub date
   unstub buildkite-agent
