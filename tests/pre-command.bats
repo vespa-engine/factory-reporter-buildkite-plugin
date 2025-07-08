@@ -71,7 +71,7 @@ EOF
   assert_output "No pipeline ID found, skipping factory reporter"
 }
 
-@test "For PR builds, just set vespa version" {
+@test "For PR jobs, just set vespa version" {
   export BUILDKITE_PLUGIN_FACTORY_REPORTER_PIPELINE_ID=123456
   export BUILDKITE_PULL_REQUEST=true
 
@@ -136,7 +136,10 @@ EOF
 
   assert_success
 
-  # Only check the additional output for build jobs
+  # Update job run also for build jobs
+  assert_line "Output from updating job run : factory-command update-buildkite-job-run 1234567890 123 running"
+
+  # Additional output for build jobs
   assert_line "Created factory build 987 for pipeline 123"
   assert_line "buildkite-agent meta-data set vespa-version 8.0.0"
   assert_line "buildkite-agent meta-data set gitref-vespa vespa-ref"

@@ -32,7 +32,7 @@ setup_file() {
   assert_output "No pipeline ID found, skipping factory reporter"
 }
 
-@test "For PR builds, do nothing" {
+@test "For PR jobs, do nothing" {
   export BUILDKITE_PLUGIN_FACTORY_REPORTER_PIPELINE_ID=123456
   export BUILDKITE_PULL_REQUEST=true
 
@@ -42,7 +42,7 @@ setup_file() {
   assert_output "This is a pull request, skipping factory reporter"
 }
 
-@test "Update job run for non-PR builds" {
+@test "Update factory job run for non-PR jobs" {
   export BUILDKITE_PLUGIN_FACTORY_REPORTER_PIPELINE_ID=123456
   export BUILDKITE_PULL_REQUEST=false
 
