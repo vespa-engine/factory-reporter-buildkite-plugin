@@ -1,6 +1,9 @@
 #!/usr/bin/env bats
 
-load "$BATS_PLUGIN_PATH/load.bash"
+load "$BATS_PLUGIN_PATH/bats-assert/load.bash"
+load "$BATS_PLUGIN_PATH/bats-mock/stub.bash"
+load "$BATS_PLUGIN_PATH/bats-file/load.bash"
+load "$BATS_PLUGIN_PATH/bats-support/load.bash"
 
 # Uncomment the following line to debug stub failures
 #export BUILDKITE_AGENT_STUB_DEBUG=/dev/tty
