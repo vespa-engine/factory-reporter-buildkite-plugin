@@ -22,7 +22,20 @@ create_mock_factory_command() {
   mkdir -p "$bin_dir"
   cat > "$bin_dir/factory-command" << 'EOF'
 #!/bin/sh
-echo "factory-command $@"
+if [ "$1" = "create-build" ]; then
+echo '{
+    "buildId":"987",
+    "version":"8.9.0",
+    "commits":[
+      {"repo":"vespa","ref":"vespa-ref"},
+      {"repo":"vespa-yahoo","ref":"vespa-yahoo-ref"},
+      {"repo":"vespaai-cloud","ref":"cloud-ref"}
+    ],
+    "variables":{}
+  }'
+else
+  echo "factory-command $@"
+fi
 EOF
   chmod +x "$bin_dir/factory-command"
 }
@@ -76,7 +89,6 @@ EOF
   run "$PWD/hooks/pre-command"
 
   assert_success
-
   refute_output --partial "start-seconds already set, skipping"
 
   assert_output <<EOF
@@ -88,4 +100,38 @@ EOF
 
   unstub date
   unstub buildkite-agent
+}
+
+@test "For build jobs, create a build, set status, and export version and gitrefs" {
+  export BUILDKITE_PLUGIN_FACTORY_REPORTER_PIPELINE_ID=123
+  export BUILDKITE_PULL_REQUEST=false
+  export BUILDKITE_PLUGIN_FACTORY_REPORTER_JOB_TYPE="build"
+
+  stub date "echo 1234567890"
+
+  # Use bats-mock's stub to mock buildkite-agent
+  stub buildkite-agent \
+    "meta-data exists start-seconds : false" \
+    "meta-data set start-seconds * : echo buildkite-agent \$@" \
+    "meta-data set factory-command * : echo buildkite-agent \$@" \
+    "meta-data set vespa-version * : echo buildkite-agent \$@" \
+    "meta-data set gitref-vespa * : echo buildkite-agent \$@" \
+    "meta-data set gitref-vespaai-cloud * : echo buildkite-agent \$@" \
+
+  run "$PWD/hooks/pre-command"
+
+  echo "version: $VESPA_VERSION"
+  echo "gitref vespa: $GITREF_VESPA"
+
+  assert_success
+
+  # Only check the additional output for build jobs
+  assert_output --partial <<EOF
+    Created factory build 987 for pipeline 123
+    buildkite-agent meta-data set vespa-version 8.9.0
+    buildkite-agent meta-data set gitref-vespa vespa-ref
+    buildkite-agent meta-data set gitref-vespaai-cloud cloud-ref
+    factory-command update-build-status 123 running Building
+    Set factory build 987 status to running
+EOF
 }
