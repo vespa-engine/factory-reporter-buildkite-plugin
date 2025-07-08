@@ -4,6 +4,7 @@
 set -eo pipefail
 
 PIPELINE="$BUILDKITE_PLUGIN_FACTORY_REPORTER_PIPELINE_ID"
+JOB_TYPE="$BUILDKITE_PLUGIN_FACTORY_REPORTER_JOB_TYPE"
 
 if [[ $SKIP_BUILDKITE_PLUGINS == "true" ]]; then
     echo "SKIP_BUILDKITE_PLUGINS is set. Skipping factory reporter"
@@ -29,6 +30,7 @@ if [[ -n $BUILDKITE_COMMAND_EXIT_STATUS ]] && (( $BUILDKITE_COMMAND_EXIT_STATUS 
     echo "Error: start-seconds not set as meta-data" >&2
     exit 1
   fi
+  echo "Build started at $START_SECONDS"
 
   FACTORY_COMMAND=$(buildkite-agent meta-data get factory-command)
   if [[ -z $FACTORY_COMMAND ]]; then
@@ -43,4 +45,6 @@ if [[ -n $BUILDKITE_COMMAND_EXIT_STATUS ]] && (( $BUILDKITE_COMMAND_EXIT_STATUS 
   if [[ $JOB_TYPE == "build" ]]; then
     $FACTORY_COMMAND update-build-status $PIPELINE failure "Build failed"
   fi
+else
+  echo "Build #$BUILDKITE_BUILD_NUMBER succeeded, factory-reporter skipping pre-exit actions"
 fi
