@@ -8,15 +8,16 @@ load "$BATS_PLUGIN_PATH/bats-support/load.bash"
 #export BUILDKITE_AGENT_STUB_DEBUG=/dev/tty
 
 setup() {
-  # Create a mock executable commands in the PATH
+  # Create mock executable commands in the PATH
   local tmpdir="${BATS_TEST_TMPDIR/bin}"
   mkdir -p "$tmpdir"
   create_mock_factory_command "$tmpdir"
   export PATH="$tmpdir:$PATH"
 }
 
-# This is a workaround for not being able to stub the 'command' built-in
 create_mock_factory_command() {
+  #echo "Creating mock factory-command script in $1" >&3
+
   # Make sure the local factory-command script doesn't exist
   export BUILDKITE_BUILD_CHECKOUT_PATH="/tmp/nonexistent"
 
@@ -76,7 +77,7 @@ EOF
   unstub curl
 }
 
-@test "For non-build jobs, set start-seconds and factory-command" {
+@test "For non-build jobs, set start-seconds and update job run" {
   export BUILDKITE_PLUGIN_FACTORY_REPORTER_PIPELINE_ID=123
   export BUILDKITE_PULL_REQUEST=false
 
@@ -116,7 +117,7 @@ EOF
     "meta-data set factory-command * : echo buildkite-agent \$@" \
     "meta-data set vespa-version * : echo buildkite-agent \$@" \
     "meta-data set gitref-vespa * : echo buildkite-agent \$@" \
-    "meta-data set gitref-vespaai-cloud * : echo buildkite-agent \$@" \
+    "meta-data set gitref-vespaai-cloud * : echo buildkite-agent \$@"
 
   run "$PWD/hooks/pre-command"
 
