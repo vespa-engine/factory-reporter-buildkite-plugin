@@ -18,7 +18,7 @@ setup_file() {
   export SKIP_BUILDKITE_PLUGINS=true
   export BUILDKITE_PULL_REQUEST=false
 
-  run "$PWD/hooks/pre-exit"
+  run "$BATS_TEST_DIRNAME/../hooks/pre-exit"
 
   assert_success
   assert_output "SKIP_BUILDKITE_PLUGINS is set. Skipping factory reporter"
@@ -28,7 +28,7 @@ setup_file() {
   unset PIPELINE
   export BUILDKITE_PULL_REQUEST=false
 
-  run "$PWD/hooks/pre-exit"
+  run "$BATS_TEST_DIRNAME/../hooks/pre-exit"
 
   assert_success
   assert_output "No pipeline ID found, skipping factory reporter"
@@ -38,7 +38,7 @@ setup_file() {
   export BUILDKITE_PLUGIN_FACTORY_REPORTER_PIPELINE_ID=123456
   export BUILDKITE_PULL_REQUEST=true
 
-  run "$PWD/hooks/pre-exit"
+  run "$BATS_TEST_DIRNAME/../hooks/pre-exit"
 
   assert_success
   assert_output "This is a pull request, skipping factory reporter"
@@ -49,7 +49,7 @@ setup_file() {
   export BUILDKITE_PULL_REQUEST=false
   export BUILDKITE_COMMAND_EXIT_STATUS=0
 
-  run "$PWD/hooks/pre-exit"
+  run "$BATS_TEST_DIRNAME/../hooks/pre-exit"
 
   assert_success
   assert_output "Build #222 succeeded, factory-reporter skipping pre-exit actions"
@@ -66,7 +66,7 @@ setup_file() {
 
   stub factory-command "echo factory-command \$@"
 
-  run "$PWD/hooks/pre-exit"
+  run "$BATS_TEST_DIRNAME/../hooks/pre-exit"
 
   assert_success
 
@@ -91,7 +91,7 @@ setup_file() {
     "meta-data get start-seconds : echo 1234567890" \
     "meta-data get factory-command : echo factory-command"
 
-  run "$PWD/hooks/pre-exit"
+  run "$BATS_TEST_DIRNAME/../hooks/pre-exit"
 
   assert_success
 

@@ -55,7 +55,7 @@ EOF
   export SKIP_BUILDKITE_PLUGINS=true
   export BUILDKITE_PULL_REQUEST=false
 
-  run "$PWD/hooks/pre-command"
+  run "$BATS_TEST_DIRNAME/../hooks/pre-command"
 
   assert_success
   assert_output "SKIP_BUILDKITE_PLUGINS is set. Skipping factory reporter"
@@ -65,7 +65,7 @@ EOF
   unset PIPELINE
   export BUILDKITE_PULL_REQUEST=false
 
-  run "$PWD/hooks/pre-command"
+  run "$BATS_TEST_DIRNAME/../hooks/pre-command"
 
   assert_success
   assert_output "No pipeline ID found, skipping factory reporter"
@@ -78,7 +78,7 @@ EOF
   stub buildkite-agent "echo buildkite-agent \$@"
   stub curl "echo '{\"version\":\"8.0.0\"}'"
 
-  run "$PWD/hooks/pre-command"
+  run "$BATS_TEST_DIRNAME/../hooks/pre-command"
 
   assert_success
   assert_output "buildkite-agent meta-data set vespa-version 8.0.0"
@@ -99,7 +99,7 @@ EOF
     "meta-data set start-seconds * : echo buildkite-agent \$@" \
     "meta-data set factory-command * : echo buildkite-agent \$@"
 
-  run "$PWD/hooks/pre-command"
+  run "$BATS_TEST_DIRNAME/../hooks/pre-command"
 
   assert_success
   refute_line "start-seconds already set, skipping"
@@ -129,7 +129,7 @@ EOF
     "meta-data set gitref-vespa * : echo buildkite-agent \$@" \
     "meta-data set gitref-vespaai-cloud * : echo buildkite-agent \$@"
 
-  run "$PWD/hooks/pre-command"
+  run "$BATS_TEST_DIRNAME/../hooks/pre-command"
 
   echo "version: $VESPA_VERSION"
   echo "gitref vespa: $GITREF_VESPA"
