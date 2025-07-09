@@ -40,16 +40,23 @@ use the following command (from the root of the repository):
 ```bash
 $ podman run -it --rm -v "$PWD:/plugin:ro" buildkite/plugin-tester
 ```
-Or, even better, install bats locally with npm:
+Or, even better (and much faster), install bats locally with npm:
 ```bash
 $ brew install node
 $ sudo npm install -g bats bats-assert bats-support bats-mock
 ```
+Export the `BATS_PLUGIN_PATH` environment variable to point to the global npm modules directory, which contains the BATS plugins:
+```bash
+export BATS_PLUGIN_PATH="$(npm root -g)"
+```
 Then run all tests with:
 ```bash
-$ BATS_PLUGIN_PATH="$(npm root -g)" bats -r tests [tests/
+bats -r tests
 ```
 To run a specific test, use:
 ```bash
-$ BATS_PLUGIN_PATH="$(npm root -g)" bats tests/test_name.bats
+bats tests/test_name.bats
 ```
+Tests can also be run in IntelliJ IDEA with the [BashSupport Pro](https://plugins.jetbrains.com/plugin/13841-bashsupport-pro)
+plugin. Ensure the `BATS_PLUGIN_PATH` environment variable is exported before launching the IDE
+to avoid setting it in each run configuration.
