@@ -7,16 +7,25 @@ load "$BATS_PLUGIN_PATH/bats-support/load.bash"
 # Uncomment the following line to debug stub failures
 #export BUILDKITE_AGENT_STUB_DEBUG=/dev/tty
 
+setup_file() {
+  # Echo the name of the test file, to get prettier output from github actions
+  test=$(basename "$BATS_TEST_FILENAME")
+  if [[ "${GITHUB_ACTIONS:-}" == "true" ]]; then
+    echo -e "\033[36m$test\033[0m" >&3
+  fi
+}
+
 setup() {
-  # Create a mock executable commands in the PATH
+  # Create mock executable commands in the PATH
   local tmpdir="${BATS_TEST_TMPDIR/bin}"
   mkdir -p "$tmpdir"
   create_mock_factory_command "$tmpdir"
   export PATH="$tmpdir:$PATH"
 }
 
-# This is a workaround for not being able to stub the 'command' built-in
 create_mock_factory_command() {
+  #echo "Creating mock factory-command script in $1" >&3
+
   # Make sure the local factory-command script doesn't exist
   export BUILDKITE_BUILD_CHECKOUT_PATH="/tmp/nonexistent"
 
@@ -44,6 +53,7 @@ EOF
 
 @test "Skip if SKIP_BUILDKITE_PLUGINS is true" {
   export SKIP_BUILDKITE_PLUGINS=true
+  export BUILDKITE_PULL_REQUEST=false
 
   run "$PWD/hooks/pre-command"
 
@@ -53,6 +63,7 @@ EOF
 
 @test "Skip if pipeline is not set" {
   unset PIPELINE
+  export BUILDKITE_PULL_REQUEST=false
 
   run "$PWD/hooks/pre-command"
 
@@ -60,7 +71,7 @@ EOF
   assert_output "No pipeline ID found, skipping factory reporter"
 }
 
-@test "For PR builds, just set vespa version" {
+@test "For PR jobs, just set vespa version" {
   export BUILDKITE_PLUGIN_FACTORY_REPORTER_PIPELINE_ID=123456
   export BUILDKITE_PULL_REQUEST=true
 
@@ -76,7 +87,7 @@ EOF
   unstub curl
 }
 
-@test "For non-build jobs, set start-seconds and factory-command" {
+@test "For non-build jobs, set start-seconds and update job run" {
   export BUILDKITE_PLUGIN_FACTORY_REPORTER_PIPELINE_ID=123
   export BUILDKITE_PULL_REQUEST=false
 
@@ -116,7 +127,7 @@ EOF
     "meta-data set factory-command * : echo buildkite-agent \$@" \
     "meta-data set vespa-version * : echo buildkite-agent \$@" \
     "meta-data set gitref-vespa * : echo buildkite-agent \$@" \
-    "meta-data set gitref-vespaai-cloud * : echo buildkite-agent \$@" \
+    "meta-data set gitref-vespaai-cloud * : echo buildkite-agent \$@"
 
   run "$PWD/hooks/pre-command"
 
@@ -125,7 +136,10 @@ EOF
 
   assert_success
 
-  # Only check the additional output for build jobs
+  # Update job run also for build jobs
+  assert_line "Output from updating job run : factory-command update-buildkite-job-run 1234567890 123 running"
+
+  # Additional output for build jobs
   assert_line "Created factory build 987 for pipeline 123"
   assert_line "buildkite-agent meta-data set vespa-version 8.0.0"
   assert_line "buildkite-agent meta-data set gitref-vespa vespa-ref"
