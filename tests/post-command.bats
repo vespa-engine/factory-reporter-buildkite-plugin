@@ -45,6 +45,7 @@ setup_file() {
 @test "Update factory job run for non-PR jobs" {
   export BUILDKITE_PLUGIN_FACTORY_REPORTER_PIPELINE_ID=123456
   export BUILDKITE_PULL_REQUEST=false
+  export BUILDKITE_BUILD_NUMBER=222
 
   stub buildkite-agent \
     "meta-data get start-seconds : echo 1234567890" \
@@ -56,10 +57,24 @@ setup_file() {
 
   assert_success
 
+  assert_line "Build #222 succeeded, updating job run status to success"
   assert_line "Build started at 1234567890"
   assert_line "Using factory command: factory-command"
   assert_line "Output from updating job run : factory-command update-buildkite-job-run 1234567890 123456 success"
 
   unstub buildkite-agent || true
   unstub factory-command || true
+}
+
+# The pre-exit hook handles failed jobs, so we do not need to handle that here.
+@test "Do nothing if buildkite user command failed" {
+  export BUILDKITE_PLUGIN_FACTORY_REPORTER_PIPELINE_ID=123456
+  export BUILDKITE_PULL_REQUEST=false
+  export BUILDKITE_COMMAND_EXIT_STATUS=1
+  export BUILDKITE_BUILD_NUMBER=222
+
+  run "$BATS_TEST_DIRNAME/../hooks/post-command"
+
+  assert_success
+  assert_line "Build #222 failed, skipping post-command actions"
 }
