@@ -60,6 +60,6 @@ setup_file() {
   assert_line "Using factory command: factory-command"
   assert_line "Output from updating job run : factory-command update-buildkite-job-run 1234567890 123456 success"
 
-  unstub buildkite-agent
-  unstub factory-command
+  unstub buildkite-agent || true
+  unstub factory-command || true
 }
