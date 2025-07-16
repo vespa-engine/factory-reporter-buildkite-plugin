@@ -30,5 +30,3 @@ hooks:
     command: "hooks/pre-command"
   post-command:
     command: "hooks/post-command"
-  pre-exit:
-    command: "hooks/pre-exit"
