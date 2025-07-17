@@ -55,10 +55,35 @@ setup() {
   assert_output "This is a pull request, skipping factory reporter"
 }
 
-@test "Update factory job run for successful jobs, but don't update build status" {
-  export BUILDKITE_PLUGIN_FACTORY_REPORTER_PIPELINE_ID=123456
+@test "Don't update factory job run for successful non-final step" {
   export BUILDKITE_PULL_REQUEST=false
   export BUILDKITE_BUILD_NUMBER=222
+  export BUILDKITE_PLUGIN_FACTORY_REPORTER_PIPELINE_ID=123456
+
+  stub buildkite-agent \
+    "meta-data get start-seconds : echo 1234567890" \
+    "meta-data get factory-command : echo factory-command"
+
+  stub factory-command "echo factory-command \$@"
+
+  run "$BATS_TEST_DIRNAME/../hooks/post-command"
+
+  assert_success
+
+  assert_line "Non-final step in build #222 succeeded, skipping job run status update"
+
+  refute_line --partial "factory-command update-buildkite-job-run"
+  refute_line --partial "factory-command update-build-status"
+
+  unstub buildkite-agent || true
+  unstub factory-command || true
+}
+
+@test "Update factory job run for successful last step, but don't update build status" {
+  export BUILDKITE_PULL_REQUEST=false
+  export BUILDKITE_BUILD_NUMBER=222
+  export BUILDKITE_PLUGIN_FACTORY_REPORTER_PIPELINE_ID=123456
+  export BUILDKITE_PLUGIN_FACTORY_REPORTER_LAST_STEP=true
 
   stub buildkite-agent \
     "meta-data get start-seconds : echo 1234567890" \
@@ -72,17 +97,27 @@ setup() {
 
   assert_line "Build started at 1234567890"
   assert_line "Using factory command: factory-command"
-  assert_line "Build #222 succeeded, setting job run status to success"
+  assert_line "Last step of build #222 succeeded, setting job run status to success"
   assert_line "factory-command update-buildkite-job-run 1234567890 123456 success"
+
+  refute_line --partial "factory-command update-build-status"
 
   unstub buildkite-agent || true
   unstub factory-command || true
 }
 
-@test "For non-build jobs with non-zero exit status, fail factory job run" {
+@test "For failing non-build jobs, fail factory job run" {
+  # Failing jobs should update the job run status, regardless of last step.
+  run_failing_non_build_job false
+  run_failing_non_build_job true
+}
+
+run_failing_non_build_job() {
   export BUILDKITE_PLUGIN_FACTORY_REPORTER_PIPELINE_ID=123456
   export BUILDKITE_PULL_REQUEST=false
   export BUILDKITE_COMMAND_EXIT_STATUS=1
+
+  export BUILDKITE_PLUGIN_FACTORY_REPORTER_LAST_STEP="$1"
 
   stub buildkite-agent \
     "meta-data get start-seconds : echo 1234567890" \
@@ -101,11 +136,19 @@ setup() {
   unstub buildkite-agent || true
 }
 
-@test "For build jobs with non-zero exit status, fail factory build" {
+@test "For build jobs with nonzero exit status, fail factory build" {
+  # Failing build jobs should update the job run status and build status, regardless of last step.
+  run_failing_build_job false
+  run_failing_build_job true
+}
+
+run_failing_build_job() {
   export BUILDKITE_PLUGIN_FACTORY_REPORTER_PIPELINE_ID=123456
   export BUILDKITE_PULL_REQUEST=false
   export BUILDKITE_COMMAND_EXIT_STATUS=1
   export BUILDKITE_PLUGIN_FACTORY_REPORTER_JOB_TYPE="build"
+
+  export BUILDKITE_PLUGIN_FACTORY_REPORTER_LAST_STEP="$1"
 
   stub buildkite-agent \
     "meta-data get start-seconds : echo 1234567890" \
