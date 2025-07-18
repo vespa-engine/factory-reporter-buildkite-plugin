@@ -55,10 +55,12 @@ setup() {
   assert_output "This is a pull request, skipping factory reporter"
 }
 
-@test "Don't update factory job run for successful non-final step" {
+@test "Don't update factory job run or build status for successful non-final step" {
   export BUILDKITE_PULL_REQUEST=false
   export BUILDKITE_BUILD_NUMBER=222
   export BUILDKITE_PLUGIN_FACTORY_REPORTER_PIPELINE_ID=123456
+  export BUILDKITE_PLUGIN_FACTORY_REPORTER_JOB_TYPE="build"
+
 
   stub buildkite-agent \
     "meta-data get start-seconds : echo 1234567890" \
@@ -79,7 +81,7 @@ setup() {
   unstub factory-command || true
 }
 
-@test "Update factory job run for successful last step, but don't update build status" {
+@test "Update factory job run for successful last step for non-build jobs" {
   export BUILDKITE_PULL_REQUEST=false
   export BUILDKITE_BUILD_NUMBER=222
   export BUILDKITE_PLUGIN_FACTORY_REPORTER_PIPELINE_ID=123456
@@ -101,6 +103,33 @@ setup() {
   assert_line "factory-command update-buildkite-job-run 1234567890 123456 success"
 
   refute_line --partial "factory-command update-build-status"
+
+  unstub buildkite-agent || true
+  unstub factory-command || true
+}
+
+@test "Update build status for successful last step for build jobs" {
+  export BUILDKITE_PULL_REQUEST=false
+  export BUILDKITE_BUILD_NUMBER=222
+  export BUILDKITE_PLUGIN_FACTORY_REPORTER_PIPELINE_ID=123456
+  export BUILDKITE_PLUGIN_FACTORY_REPORTER_LAST_STEP=true
+  export BUILDKITE_PLUGIN_FACTORY_REPORTER_JOB_TYPE="build"
+
+  stub buildkite-agent \
+    "meta-data get start-seconds : echo 1234567890" \
+    "meta-data get factory-command : echo factory-command"
+
+  stub factory-command "echo factory-command \$@"
+
+  run "$BATS_TEST_DIRNAME/../hooks/post-command"
+
+  assert_success
+
+  assert_line "Build started at 1234567890"
+  assert_line "Using factory command: factory-command"
+  assert_line "Last step of build #222 succeeded, setting job run status to success"
+  assert_line "factory-command update-buildkite-job-run 1234567890 123456 success"
+  assert_line "factory-command update-build-status 123456 success Build success"
 
   unstub buildkite-agent || true
   unstub factory-command || true
