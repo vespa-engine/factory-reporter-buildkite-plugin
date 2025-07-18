@@ -46,6 +46,7 @@ if [[ -n $BUILDKITE_COMMAND_EXIT_STATUS ]] && (( $BUILDKITE_COMMAND_EXIT_STATUS 
 
   # Only update build status if the job type is 'build'
   if [[ $JOB_TYPE == "build" ]]; then
+    echo "Updating build status to failure"
     $FACTORY_COMMAND update-build-status "$PIPELINE" "failure" "Build failed"
   fi
 else
@@ -54,6 +55,7 @@ else
     $FACTORY_COMMAND update-buildkite-job-run "$START_SECONDS" "$PIPELINE" "success"
     # Only update build status if the job type is 'build'
     if [[ $JOB_TYPE == "build" ]]; then
+      echo "Updating build status to success"
       $FACTORY_COMMAND update-build-status "$PIPELINE" "success" "Build success"
     fi
   else
