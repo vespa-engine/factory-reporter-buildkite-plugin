@@ -40,9 +40,6 @@ if [[ -z $FACTORY_COMMAND ]]; then
 fi
 echo "Using factory command: $FACTORY_COMMAND"
 
-# TODO: remove
-echo "LAST_STEP: $LAST_STEP"
-
 if [[ -n $BUILDKITE_COMMAND_EXIT_STATUS ]] && (( $BUILDKITE_COMMAND_EXIT_STATUS != 0 )); then
   echo "Build #$BUILDKITE_BUILD_NUMBER failed, setting job run status to failure"
   $FACTORY_COMMAND update-buildkite-job-run $START_SECONDS $PIPELINE "failure"
