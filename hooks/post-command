@@ -40,21 +40,22 @@ if [[ -z $FACTORY_COMMAND ]]; then
 fi
 echo "Using factory command: $FACTORY_COMMAND"
 
-# TODO: remove
-echo "LAST_STEP: $LAST_STEP"
-
 if [[ -n $BUILDKITE_COMMAND_EXIT_STATUS ]] && (( $BUILDKITE_COMMAND_EXIT_STATUS != 0 )); then
   echo "Build #$BUILDKITE_BUILD_NUMBER failed, setting job run status to failure"
-  $FACTORY_COMMAND update-buildkite-job-run $START_SECONDS $PIPELINE "failure"
+  $FACTORY_COMMAND update-buildkite-job-run "$START_SECONDS" "$PIPELINE" "failure"
 
   # Only update build status if the job type is 'build'
   if [[ $JOB_TYPE == "build" ]]; then
-    $FACTORY_COMMAND update-build-status $PIPELINE failure "Build failed"
+    $FACTORY_COMMAND update-build-status "$PIPELINE" "failure" "Build failed"
   fi
 else
   if [[ $LAST_STEP == "true" ]]; then
     echo "Last step of build #$BUILDKITE_BUILD_NUMBER succeeded, setting job run status to success"
-    $FACTORY_COMMAND update-buildkite-job-run $START_SECONDS $PIPELINE "success"
+    $FACTORY_COMMAND update-buildkite-job-run "$START_SECONDS" "$PIPELINE" "success"
+    # Only update build status if the job type is 'build'
+    if [[ $JOB_TYPE == "build" ]]; then
+      $FACTORY_COMMAND update-build-status "$PIPELINE" "success" "Build success"
+    fi
   else
     echo "Non-final step in build #$BUILDKITE_BUILD_NUMBER succeeded, skipping job run status update"
   fi
