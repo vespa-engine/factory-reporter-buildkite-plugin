@@ -41,6 +41,14 @@ fi
 echo "Using factory command: $FACTORY_COMMAND"
 
 if [[ -n $BUILDKITE_COMMAND_EXIT_STATUS ]] && (( $BUILDKITE_COMMAND_EXIT_STATUS != 0 )); then
+  # Don't report failure if the step soft-failed (exit code 99)
+  step_outcome=$(buildkite-agent step get outcome || echo "")
+  echo "Step outcome: '$step_outcome'"
+  if [[ "$step_outcome" == "soft_failed" ]]; then
+    echo "Step soft-failed, skipping job run status update"
+    exit 0
+  fi
+
   echo "Build #$BUILDKITE_BUILD_NUMBER failed, setting job run status to failure"
   $FACTORY_COMMAND update-buildkite-job-run "$START_SECONDS" "$PIPELINE" "failure"
 

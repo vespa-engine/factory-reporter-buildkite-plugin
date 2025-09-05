@@ -210,3 +210,27 @@ run_failing_build_job() {
   run_failing_build_job false
   run_failing_build_job true
 }
+
+
+@test "Skip reporting is step soft failed" {
+  export BUILDKITE_PLUGIN_FACTORY_REPORTER_PIPELINE_ID=123456
+  export BUILDKITE_PULL_REQUEST=false
+  export BUILDKITE_COMMAND_EXIT_STATUS=1
+  export BUILDKITE_BUILD_NUMBER=222
+
+  stub buildkite-agent \
+    "meta-data get start-seconds : echo 1234567890" \
+    "meta-data get factory-command : echo factory-command"\
+    "step get outcome : echo soft_failed"
+
+  run "$BATS_TEST_DIRNAME/../hooks/post-command"
+
+  assert_success
+
+  assert_line "Step soft-failed, skipping job run status update"
+
+  refute_line --partial "factory-command update-buildkite-job-run"
+  refute_line --partial "factory-command update-build-status"
+
+  unstub buildkite-agent || true
+}
