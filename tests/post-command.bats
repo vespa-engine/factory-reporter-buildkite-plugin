@@ -15,6 +15,21 @@ setup_file() {
   export BUILDKITE_BUILD_NUMBER=222
 }
 
+create_mock_factory_command() {
+  #echo "Creating mock factory-command script in $1" >&3
+
+  # Make sure the local factory-command script doesn't exist
+  export BUILDKITE_BUILD_CHECKOUT_PATH="/tmp/nonexistent"
+
+  local bin_dir="${1:-$BATS_TEST_TMPDIR/bin}"
+  mkdir -p "$bin_dir"
+  cat > "$bin_dir/factory-command" << 'EOF'
+#!/bin/sh
+echo "factory-command $@"
+EOF
+  chmod +x "$bin_dir/factory-command"
+}
+
 setup() {
   # Create mock factory-command in the PATH.
   # This is more convenient than using a stub that is called multiple times.
@@ -135,12 +150,6 @@ setup() {
   unstub factory-command || true
 }
 
-@test "For failing non-build jobs, fail factory job run" {
-  # Failing jobs should update the job run status, regardless of last step.
-  run_failing_non_build_job false
-  run_failing_non_build_job true
-}
-
 run_failing_non_build_job() {
   export BUILDKITE_PLUGIN_FACTORY_REPORTER_PIPELINE_ID=123456
   export BUILDKITE_PULL_REQUEST=false
@@ -165,10 +174,10 @@ run_failing_non_build_job() {
   unstub buildkite-agent || true
 }
 
-@test "For build jobs with nonzero exit status, fail factory build" {
-  # Failing build jobs should update the job run status and build status, regardless of last step.
-  run_failing_build_job false
-  run_failing_build_job true
+@test "For failing non-build jobs, fail factory job run" {
+  # Failing jobs should update the job run status, regardless of last step.
+  run_failing_non_build_job false
+  run_failing_non_build_job true
 }
 
 run_failing_build_job() {
@@ -196,17 +205,8 @@ run_failing_build_job() {
   unstub buildkite-agent || true
 }
 
-create_mock_factory_command() {
-  #echo "Creating mock factory-command script in $1" >&3
-
-  # Make sure the local factory-command script doesn't exist
-  export BUILDKITE_BUILD_CHECKOUT_PATH="/tmp/nonexistent"
-
-  local bin_dir="${1:-$BATS_TEST_TMPDIR/bin}"
-  mkdir -p "$bin_dir"
-  cat > "$bin_dir/factory-command" << 'EOF'
-#!/bin/sh
-echo "factory-command $@"
-EOF
-  chmod +x "$bin_dir/factory-command"
+@test "For build jobs with nonzero exit status, fail factory build" {
+  # Failing build jobs should update the job run status and build status, regardless of last step.
+  run_failing_build_job false
+  run_failing_build_job true
 }
