@@ -218,12 +218,12 @@ run_failing_build_job() {
   export BUILDKITE_COMMAND_EXIT_STATUS=1
   export BUILDKITE_BUILD_NUMBER=222
   export BUILDKITE_PLUGIN_FACTORY_REPORTER_LAST_STEP=false
+  export BUILDKITE_STEP_KEY=abc456
 
   stub buildkite-agent \
     "meta-data get start-seconds : echo 1234567890" \
     "meta-data get factory-command : echo factory-command" \
-    "step get key : echo step1" \
-    "step get outcome --step step1 : echo soft_failed"
+    "step get outcome --step abc456 : echo soft_failed"
 
   run "$BATS_TEST_DIRNAME/../hooks/post-command"
 
@@ -242,12 +242,12 @@ run_failing_build_job() {
   export BUILDKITE_COMMAND_EXIT_STATUS=1
   export BUILDKITE_BUILD_NUMBER=222
   export BUILDKITE_PLUGIN_FACTORY_REPORTER_LAST_STEP=true
+  export BUILDKITE_STEP_KEY=abc456
 
   stub buildkite-agent \
     "meta-data get start-seconds : echo 1234567890" \
     "meta-data get factory-command : echo factory-command" \
-    "step get key : echo step1" \
-    "step get outcome --step step1 : echo soft_failed"
+    "step get outcome --step abc456 : echo soft_failed"
 
   run "$BATS_TEST_DIRNAME/../hooks/post-command"
 
