@@ -218,18 +218,18 @@ run_failing_build_job() {
   export BUILDKITE_COMMAND_EXIT_STATUS=1
   export BUILDKITE_BUILD_NUMBER=222
   export BUILDKITE_PLUGIN_FACTORY_REPORTER_LAST_STEP=false
+  export BUILDKITE_STEP_KEY=abc456
 
   stub buildkite-agent \
     "meta-data get start-seconds : echo 1234567890" \
     "meta-data get factory-command : echo factory-command" \
-    "step get key : echo step1" \
-    "step get outcome --step step1 : echo soft_failed"
+    "step get outcome --step abc456 : echo soft_failed"
 
   run "$BATS_TEST_DIRNAME/../hooks/post-command"
 
   assert_success
 
-  assert_line "Step 'step1' soft-failed, skipping job run status update"
+  assert_line "Step 'abc456' soft-failed, skipping job run status update"
 
   refute_line --partial "factory-command update-buildkite-job-run"
 
@@ -242,20 +242,20 @@ run_failing_build_job() {
   export BUILDKITE_COMMAND_EXIT_STATUS=1
   export BUILDKITE_BUILD_NUMBER=222
   export BUILDKITE_PLUGIN_FACTORY_REPORTER_LAST_STEP=true
+  export BUILDKITE_STEP_KEY=abc456
 
   stub buildkite-agent \
     "meta-data get start-seconds : echo 1234567890" \
     "meta-data get factory-command : echo factory-command" \
-    "step get key : echo step1" \
-    "step get outcome --step step1 : echo soft_failed"
+    "step get outcome --step abc456 : echo soft_failed"
 
   run "$BATS_TEST_DIRNAME/../hooks/post-command"
 
   assert_failure
 
-  assert_line "Error: Last step 'step1' soft-failed, this should never happen"
+  assert_line "Error: Last step 'abc456' soft-failed, this should never happen"
 
-  refute_line "Step 'step1' soft-failed, skipping job run status update"
+  refute_line "Step 'abc456' soft-failed, skipping job run status update"
 
   unstub buildkite-agent || true
 }
