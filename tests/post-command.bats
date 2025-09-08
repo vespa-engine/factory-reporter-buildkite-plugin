@@ -216,50 +216,48 @@ run_failing_build_job() {
 }
 
 
-@test "Skip reporting for soft-failed step" {
+@test "Skip reporting for step with IGNORE_FAIL true and nonzero exit status" {
   export BUILDKITE_PLUGIN_FACTORY_REPORTER_PIPELINE_ID=123456
   export BUILDKITE_PULL_REQUEST=false
   export BUILDKITE_COMMAND_EXIT_STATUS=1
-  export BUILDKITE_BUILD_NUMBER=222
   export BUILDKITE_PLUGIN_FACTORY_REPORTER_LAST_STEP=false
+  export BUILDKITE_PLUGIN_FACTORY_REPORTER_IGNORE_FAIL=true
   export BUILDKITE_STEP_ID=abc456
 
   stub buildkite-agent \
     "meta-data get start-seconds : echo 1234567890" \
-    "meta-data get factory-command : echo factory-command" \
-    "step get outcome --step abc456 : echo soft_failed"
+    "meta-data get factory-command : echo factory-command"
 
   run "$BATS_TEST_DIRNAME/../hooks/post-command"
 
   assert_success
 
-  assert_line "Step 'abc456' soft-failed, skipping job run status update"
+  assert_line "IGNORE_FAIL is true for step 'abc456', skipping failure update"
 
   refute_line --partial "factory-command update-buildkite-job-run"
 
   unstub buildkite-agent || true
 }
 
-@test "Fail if last step is soft-failed" {
+@test "Fail if last step has IGNORE_FAIL true and nonzero exit status" {
   export BUILDKITE_PLUGIN_FACTORY_REPORTER_PIPELINE_ID=123456
   export BUILDKITE_PULL_REQUEST=false
   export BUILDKITE_COMMAND_EXIT_STATUS=1
-  export BUILDKITE_BUILD_NUMBER=222
   export BUILDKITE_PLUGIN_FACTORY_REPORTER_LAST_STEP=true
+  export BUILDKITE_PLUGIN_FACTORY_REPORTER_IGNORE_FAIL=true
   export BUILDKITE_STEP_ID=abc456
 
   stub buildkite-agent \
     "meta-data get start-seconds : echo 1234567890" \
-    "meta-data get factory-command : echo factory-command" \
-    "step get outcome --step abc456 : echo soft_failed"
+    "meta-data get factory-command : echo factory-command"
 
   run "$BATS_TEST_DIRNAME/../hooks/post-command"
 
   assert_failure
 
-  assert_line "Error: Last step 'abc456' soft-failed, this should never happen"
+  assert_line "Error: IGNORE_FAIL was true for last step 'abc456', this is not allowed"
 
-  refute_line "Step 'abc456' soft-failed, skipping job run status update"
+  refute_line --partial "skipping failure update"
 
   unstub buildkite-agent || true
 }
