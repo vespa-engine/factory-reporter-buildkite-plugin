@@ -40,7 +40,7 @@ if [[ -z $FACTORY_COMMAND ]]; then
 fi
 echo "Using factory command: $FACTORY_COMMAND"
 
-step_outcome=$(buildkite-agent step get "outcome" --step "${BUILDKITE_STEP_KEY}" || echo "")
+step_outcome=$(buildkite-agent step get "outcome" --step "$BUILDKITE_STEP_KEY" || echo "")
 echo "Buildkite step outcome: '$step_outcome'"
 
 if [[ -n $BUILDKITE_COMMAND_EXIT_STATUS ]] && (( $BUILDKITE_COMMAND_EXIT_STATUS != 0 )); then
@@ -48,10 +48,10 @@ if [[ -n $BUILDKITE_COMMAND_EXIT_STATUS ]] && (( $BUILDKITE_COMMAND_EXIT_STATUS 
   if [[ "$step_outcome" == "soft_failed" ]]; then
     if [[ $LAST_STEP == "true" ]]; then
       # Soft-failed should never be used on the last job step
-      echo "Error: Last step '$step_key' soft-failed, this should never happen" >&2
+      echo "Error: Last step '$BUILDKITE_STEP_KEY' soft-failed, this should never happen" >&2
       exit 1
     fi
-    echo "Step '$step_key' soft-failed, skipping job run status update"
+    echo "Step '$BUILDKITE_STEP_KEY' soft-failed, skipping job run status update"
     exit 0
   fi
 
