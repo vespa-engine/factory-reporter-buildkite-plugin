@@ -40,9 +40,7 @@ if [[ -z $FACTORY_COMMAND ]]; then
 fi
 echo "Using factory command: $FACTORY_COMMAND"
 
-step_key=$(buildkite-agent step get "key" || echo "")
-echo "Buildkite step key: '$step_key'"
-step_outcome=$(buildkite-agent step get "outcome" --step "$step_key" || echo "")
+step_outcome=$(buildkite-agent step get "outcome" --step "${BUILDKITE_STEP_KEY}" || echo "")
 echo "Buildkite step outcome: '$step_outcome'"
 
 if [[ -n $BUILDKITE_COMMAND_EXIT_STATUS ]] && (( $BUILDKITE_COMMAND_EXIT_STATUS != 0 )); then
