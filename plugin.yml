@@ -8,17 +8,22 @@ configuration:
     pipeline-id:
       type: integer
       description: "The Vespa Factory pipeline ID to report status to"
-    first-step:
+    last-step:
       type: boolean
-      description: "Is this the first step? Yes: Create a build, No: Update the build"
+      description: "Job success will only be reported if true. Defaults to false."
+      default: false
     job-type:
-        type: string
-        description: "The type of job being reported (e.g., 'build', 'release', 'test'). Defaults to 'build'."
-        default: 'build'
+      type: string
+      description: "The type of job being reported (e.g., 'build', 'release', 'test'). Defaults to 'build'."
+      default: 'build'
+    ignore-fail:
+      type: boolean
+      description: "If true, failures will not be reported for this step. Defaults to false."
+      default: false
     build-platform:
-        type: string
-        description: "The factory build platform, only used for build jobs. Defaults to 'opensource_centos7'."
-        default: 'opensource_centos7'
+      type: string
+      description: "The factory build platform, only used for build jobs. Defaults to 'opensource_centos7'."
+      default: 'opensource_centos7'
 
   additionalProperties: false
   required:

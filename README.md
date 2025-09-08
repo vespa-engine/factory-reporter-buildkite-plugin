@@ -22,16 +22,15 @@ steps:
 
 The id of the pipeline
 
-### `last-step` (Required, boolean)
+### `last-step` (Optional, boolean)
 
 Set to true if this is the last step in the pipeline
-
 
 ### `job-type` (Optional, string)
 
 The type of job. Defaults to `build`.
 
-### 'ignore-fail' (Optional, boolean)
+### `ignore-fail` (Optional, boolean)
 
 Set to true to skip reporting failure to factory for this step. Defaults to `false`.
 
