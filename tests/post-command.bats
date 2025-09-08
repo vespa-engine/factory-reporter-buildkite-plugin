@@ -229,7 +229,7 @@ run_failing_build_job() {
 
   assert_success
 
-  assert_line "Step 'step1' soft-failed, skipping job run status update"
+  assert_line "Step 'abc456' soft-failed, skipping job run status update"
 
   refute_line --partial "factory-command update-buildkite-job-run"
 
@@ -253,9 +253,9 @@ run_failing_build_job() {
 
   assert_failure
 
-  assert_line "Error: Last step 'step1' soft-failed, this should never happen"
+  assert_line "Error: Last step 'abc456' soft-failed, this should never happen"
 
-  refute_line "Step 'step1' soft-failed, skipping job run status update"
+  refute_line "Step 'abc456' soft-failed, skipping job run status update"
 
   unstub buildkite-agent || true
 }
