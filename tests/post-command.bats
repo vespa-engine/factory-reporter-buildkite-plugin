@@ -1,4 +1,8 @@
 #!/usr/bin/env bats
+#
+# Tests require redefining shell variables
+# shellcheck disable=SC2030,SC2031
+
 
 load "$BATS_PLUGIN_PATH/bats-assert/load.bash"
 load "$BATS_PLUGIN_PATH/bats-mock/stub.bash"
@@ -218,7 +222,7 @@ run_failing_build_job() {
   export BUILDKITE_COMMAND_EXIT_STATUS=1
   export BUILDKITE_BUILD_NUMBER=222
   export BUILDKITE_PLUGIN_FACTORY_REPORTER_LAST_STEP=false
-  export BUILDKITE_STEP_KEY=abc456
+  export BUILDKITE_STEP_ID=abc456
 
   stub buildkite-agent \
     "meta-data get start-seconds : echo 1234567890" \
@@ -242,7 +246,7 @@ run_failing_build_job() {
   export BUILDKITE_COMMAND_EXIT_STATUS=1
   export BUILDKITE_BUILD_NUMBER=222
   export BUILDKITE_PLUGIN_FACTORY_REPORTER_LAST_STEP=true
-  export BUILDKITE_STEP_KEY=abc456
+  export BUILDKITE_STEP_ID=abc456
 
   stub buildkite-agent \
     "meta-data get start-seconds : echo 1234567890" \
