@@ -65,13 +65,18 @@ if [[ $BUILDKITE_PULL_REQUEST == "false" ]]; then
   export VESPA_VERSION
   buildkite-agent meta-data set vespa-version "$VESPA_VERSION"
 
-  GITREF_VESPA=$(jq -re '.commits[]|select(.repo=="vespa")|.ref' <<< "$JSON")
-  export GITREF_VESPA
-  buildkite-agent meta-data set gitref-vespa "$GITREF_VESPA"
-
-  GITREF_VESPAAI_CLOUD=$(jq -re '.commits[]|select(.repo=="vespaai-cloud")|.ref' <<< "$JSON")
-  export GITREF_VESPAAI_CLOUD
-  buildkite-agent meta-data set gitref-vespaai-cloud "$GITREF_VESPAAI_CLOUD"
+  # Export GITREF_ variables for each commit in the response
+  while IFS= read -r json_obj; do
+    repo=$(jq -re '.repo' <<< "$json_obj")
+    ref=$(jq -re '.ref' <<< "$json_obj")
+    # Convert repo name to UPPERCASE and replace dashes with underscores
+    gitref_var_name="GITREF_${repo^^}"
+    gitref_var_name="${gitref_var_name//-/_}"
+    echo "Exporting '${gitref_var_name}' with ref '${ref}'"
+    declare -x "${gitref_var_name}"="${ref}"
+    # Store in buildkite metadata with lowercase and dashes
+    buildkite-agent meta-data set "gitref-$repo" "$ref"
+  done < <(jq -c '.commits[]' <<< "$JSON")
 
   $FACTORY_COMMAND update-build-status "$PIPELINE" running "Building"
   echo "Set factory build $VESPA_FACTORY_BUILD_ID status to running"

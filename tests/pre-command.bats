@@ -40,8 +40,9 @@ echo '{
     "version":"8.0.0",
     "commits":[
       {"repo":"vespa","ref":"vespa-ref"},
-      {"repo":"vespa-yahoo","ref":"vespa-yahoo-ref"},
-      {"repo":"vespaai-cloud","ref":"cloud-ref"}
+      {"repo":"vespa-foobar","ref":"example-foobar-ref"},
+      {"repo":"vespaai-cloud","ref":"my-cloud-ref"},
+      {"repo":"vespaai-buildkite","ref":"a2f3c6"}
     ],
     "variables":{}
   }'
@@ -128,7 +129,9 @@ EOF
     "meta-data set factory-command * : echo buildkite-agent \$@" \
     "meta-data set vespa-version * : echo buildkite-agent \$@" \
     "meta-data set gitref-vespa * : echo buildkite-agent \$@" \
-    "meta-data set gitref-vespaai-cloud * : echo buildkite-agent \$@"
+    "meta-data set gitref-vespa-foobar * : echo buildkite-agent \$@" \
+    "meta-data set gitref-vespaai-cloud * : echo buildkite-agent \$@" \
+    "meta-data set gitref-vespaai-buildkite * : echo buildkite-agent \$@"
 
   run "$BATS_TEST_DIRNAME/../hooks/pre-command"
 
@@ -144,7 +147,8 @@ EOF
   assert_line "Created factory build 987 for pipeline 123"
   assert_line "buildkite-agent meta-data set vespa-version 8.0.0"
   assert_line "buildkite-agent meta-data set gitref-vespa vespa-ref"
-  assert_line "buildkite-agent meta-data set gitref-vespaai-cloud cloud-ref"
+  assert_line "buildkite-agent meta-data set gitref-vespaai-cloud my-cloud-ref"
+  assert_line "buildkite-agent meta-data set gitref-vespaai-buildkite a2f3c6"
   assert_line "factory-command update-build-status 123 running Building"
   assert_line "Set factory build 987 status to running"
 }
