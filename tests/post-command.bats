@@ -37,7 +37,7 @@ EOF
 setup() {
   # Create mock factory-command in the PATH.
   # This is more convenient than using a stub that is called multiple times.
-  local tmpdir="${BATS_TEST_TMPDIR/bin}"
+  local tmpdir="$BATS_TEST_TMPDIR/bin"
   mkdir -p "$tmpdir"
   create_mock_factory_command "$tmpdir"
   export PATH="$tmpdir:$PATH"
