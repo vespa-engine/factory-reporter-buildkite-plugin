@@ -21,7 +21,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
         with:
-          node-version: '22' # Use a recent LTS version
+          node-version: '24' # Use a recent LTS version
 
       - name: Install BATS and helpers
         run: |
