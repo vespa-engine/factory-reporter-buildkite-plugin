@@ -59,7 +59,15 @@ if [[ -n $BUILDKITE_COMMAND_EXIT_STATUS ]] && (( $BUILDKITE_COMMAND_EXIT_STATUS 
   # Only update build status if the job type is 'build'
   if [[ $JOB_TYPE == "build" ]]; then
     echo "Updating build status to failure"
-    $FACTORY_COMMAND update-build-status "$PIPELINE" "failure" "Build failed"
+    # Set by execute.sh in the build, e.g. "Java tests failed"
+    DESCRIPTION=$(buildkite-agent meta-data get "failure-description-$BUILDKITE_JOB_ID" --default "Build failed" || true)
+    # factory-command does not escape the description in its JSON request
+    DESCRIPTION="${DESCRIPTION//[[:cntrl:]]/ }"
+    DESCRIPTION="${DESCRIPTION//[\"\\]/}"
+    if [[ -z ${DESCRIPTION// /} ]]; then
+      DESCRIPTION="Build failed"
+    fi
+    $FACTORY_COMMAND update-build-status "$PIPELINE" "failure" "$DESCRIPTION"
   fi
 else
   if [[ $LAST_STEP == "true" ]]; then

@@ -184,17 +184,20 @@ run_failing_non_build_job() {
   run_failing_non_build_job true
 }
 
+# Runs a failing build job, where the failure description in the job's meta-data is given by the stub command $2
 run_failing_build_job() {
   export BUILDKITE_PLUGIN_FACTORY_REPORTER_PIPELINE_ID=123456
   export BUILDKITE_PULL_REQUEST=false
   export BUILDKITE_COMMAND_EXIT_STATUS=1
   export BUILDKITE_PLUGIN_FACTORY_REPORTER_JOB_TYPE="build"
+  export BUILDKITE_JOB_ID="job-1"
 
   export BUILDKITE_PLUGIN_FACTORY_REPORTER_LAST_STEP="$1"
 
   stub buildkite-agent \
     "meta-data get start-seconds : echo 1234567890" \
-    "meta-data get factory-command : echo factory-command"
+    "meta-data get factory-command : echo factory-command" \
+    "meta-data get failure-description-job-1 --default * : ${2:-echo 'Build failed'}"
 
   run "$BATS_TEST_DIRNAME/../hooks/post-command"
 
@@ -203,16 +206,34 @@ run_failing_build_job() {
   # Update job run also for build jobs
   assert_line "factory-command update-buildkite-job-run 1234567890 123456 failure"
 
-  # Additional output for build jobs
-  assert_line "factory-command update-build-status 123456 failure Build failed"
-
   unstub buildkite-agent || true
 }
 
 @test "For build jobs with nonzero exit status, fail factory build" {
   # Failing build jobs should update the job run status and build status, regardless of last step.
   run_failing_build_job false
+  assert_line "factory-command update-build-status 123456 failure Build failed"
   run_failing_build_job true
+  assert_line "factory-command update-build-status 123456 failure Build failed"
+}
+
+@test "For failing build jobs, use the failure description from the job's meta-data" {
+  run_failing_build_job false "echo 'Java tests failed'"
+
+  assert_line "factory-command update-build-status 123456 failure Java tests failed"
+}
+
+@test "For failing build jobs, make the failure description safe for JSON" {
+  # Control characters are replaced by spaces, and quotes and backslashes are removed
+  run_failing_build_job false "printf '\"Java\"\\\\ tests\\nfailed\\t'"
+
+  assert_line "factory-command update-build-status 123456 failure Java tests failed "
+}
+
+@test "For failing build jobs, fall back to a generic failure description when meta-data is unavailable" {
+  run_failing_build_job false "exit 1"
+
+  assert_line "factory-command update-build-status 123456 failure Build failed"
 }
 
 
