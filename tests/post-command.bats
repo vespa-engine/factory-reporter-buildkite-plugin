@@ -223,11 +223,16 @@ run_failing_build_job() {
   assert_line "factory-command update-build-status 123456 failure Java tests failed"
 }
 
-@test "For failing build jobs, make the failure description safe for JSON" {
-  # Control characters are replaced by spaces, and quotes and backslashes are removed
-  run_failing_build_job false "printf '\"Java\"\\\\ tests\\nfailed\\t'"
+@test "For failing build jobs, pass the failure description on as is, as factory-command escapes it" {
+  run_failing_build_job false "echo '\"Java\" tests\\ failed'"
 
-  assert_line "factory-command update-build-status 123456 failure Java tests failed "
+  assert_line "factory-command update-build-status 123456 failure \"Java\" tests\\ failed"
+}
+
+@test "For failing build jobs, fall back to a generic failure description when it is blank" {
+  run_failing_build_job false "printf ' \\n\\t'"
+
+  assert_line "factory-command update-build-status 123456 failure Build failed"
 }
 
 @test "For failing build jobs, fall back to a generic failure description when meta-data is unavailable" {
