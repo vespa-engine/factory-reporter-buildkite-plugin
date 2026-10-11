@@ -38,6 +38,18 @@ Set to true to skip reporting failure to factory for this step. Defaults to `fal
 
 The factory build platform. Defaults to `opensource_centos7`
 
+## Failure description
+
+When a build job fails, the build status in Factory is `Build failed` by default.
+The job can show a more specific description, e.g. `Java tests failed`, by setting it
+in the meta-data key `failure-description-$BUILDKITE_JOB_ID` before it exits:
+
+```bash
+buildkite-agent meta-data set "failure-description-$BUILDKITE_JOB_ID" "Java tests failed"
+```
+
+Keep it short, as it is shown in the build overview and in Slack notifications.
+
 ## Run tests locally
 This module uses [BATS](https://bats-core.readthedocs.io/en/stable/) for testing.
 
